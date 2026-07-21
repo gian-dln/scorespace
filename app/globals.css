@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
+/* Make the `dark:` variant class-based only, so the app commits to one
+   deliberate light "concert paper" theme instead of flipping on OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f4f5f6; /* page — the felt beneath the keys */
+  --ink: #0b0b0c; /* black keys, primary text */
+  --steel: #6e7075; /* secondary text */
+  --hairline: #e4e5e7; /* dividers, key seams */
+  --keywhite: #fcfcfd; /* white keys, raised surfaces */
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+
+  /* The only colour on the page: a brushed-chrome sweep. Music brings colour. */
+  --chrome-h: linear-gradient(90deg, #9ca0a6, #edeff2 32%, #c4c7cc 52%, #edeff2 70%, #9ca0a6);
+  --chrome-v: linear-gradient(180deg, #9ca0a6, #edeff2 32%, #c4c7cc 52%, #edeff2 70%, #9ca0a6);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-steel: var(--steel);
+  --color-hairline: var(--hairline);
+  --color-keywhite: var(--keywhite);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-bodoni);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ── Signature: a piano keyboard rendered entirely in CSS ─────────────────
+   White keys are hairline-seamed cells; black keys follow the real 2–3
+   grouping across each octave (none after E or B). The one true
+   black-and-white object on the page — kept slim so it reads as elegant. */
+.piano-keys {
+  --u: 22px; /* white-key width */
+  --oct: calc(var(--u) * 7); /* seven white keys to an octave */
+  height: 44px;
+  background-color: var(--keywhite);
+  background-image:
+    /* black keys: five bars per octave, positioned as % of the octave */
+    linear-gradient(
+      90deg,
+      transparent 0 9.857%,
+      var(--ink) 9.857% 18.714%,
+      transparent 18.714% 24.143%,
+      var(--ink) 24.143% 33%,
+      transparent 33% 52.714%,
+      var(--ink) 52.714% 61.571%,
+      transparent 61.571% 67%,
+      var(--ink) 67% 75.857%,
+      transparent 75.857% 81.286%,
+      var(--ink) 81.286% 90.143%,
+      transparent 90.143% 100%
+    ),
+    /* white-key seams */
+    repeating-linear-gradient(90deg, transparent 0 calc(var(--u) - 1px), var(--hairline) calc(var(--u) - 1px) var(--u));
+  background-size:
+    var(--oct) 60%,
+    auto;
+  background-repeat: repeat-x, repeat;
+  background-position:
+    left top,
+    left top;
+}
+
+@media (max-width: 640px) {
+  .piano-keys {
+    --u: 17px;
+    height: 38px;
+  }
+}
+
+/* Brushed-chrome accents — used only on focus and hover. */
+.chrome-h {
+  background-image: var(--chrome-h);
+}
+.chrome-v {
+  background-image: var(--chrome-v);
 }
