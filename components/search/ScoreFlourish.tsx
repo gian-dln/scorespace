@@ -1,12 +1,16 @@
 import type { CSSProperties } from "react";
 
 const WIDTH = 1200;
-const HEIGHT = 150;
-const BASE_Y = 78;
+/** Taller than the ribbon needs. `preserveAspectRatio="slice"` crops to fill
+ *  the box, so the clef was being clipped once it scaled and tilted near the
+ *  edge. The spare vertical room keeps it clear of the crop line. */
+const HEIGHT = 180;
+const BASE_Y = 92;
 const AMP = 15; /* how far the ribbon swells */
 const WAVELENGTH = 540;
 const GAP = 9; /* distance between stave lines */
 const STEP = 4.5; /* half a stave space — one pitch step */
+const SAMPLE = 4; /* px between sampled points; finer = smoother curve */
 
 /** Vertical position of the ribbon at x, for a line sitting `offset` from its centre. */
 function waveY(x: number, offset: number, ampScale = 1): number {
@@ -19,7 +23,7 @@ function waveY(x: number, offset: number, ampScale = 1): number {
  *  lets it run on `linear` timing with no stop at either end. */
 function wavePath(offset: number, ampScale: number): string {
   const points: string[] = [];
-  for (let x = -WAVELENGTH; x <= WIDTH + WAVELENGTH; x += 8) {
+  for (let x = -WAVELENGTH; x <= WIDTH + WAVELENGTH; x += SAMPLE) {
     points.push(`${x === -WAVELENGTH ? "M" : "L"}${x} ${waveY(x, offset, ampScale).toFixed(2)}`);
   }
   return points.join(" ");
@@ -29,11 +33,11 @@ function wavePath(offset: number, ampScale: number): string {
  *  common factor, so the lines pull apart continuously instead of settling
  *  back into step the way a shared duration with staggered delays would. */
 const LINES = [
-  { offset: -2 * GAP, amp: 1.0, travel: "13s", drift: "8.5s", driftPx: "5px", delay: "-2.1s" },
-  { offset: -1 * GAP, amp: 1.06, travel: "13.7s", drift: "10.2s", driftPx: "-4px", delay: "-5.4s" },
-  { offset: 0, amp: 0.95, travel: "12.6s", drift: "9.1s", driftPx: "6px", delay: "-0.8s" },
-  { offset: 1 * GAP, amp: 1.03, travel: "14.2s", drift: "11.4s", driftPx: "-5px", delay: "-3.6s" },
-  { offset: 2 * GAP, amp: 0.98, travel: "13.3s", drift: "8.8s", driftPx: "4px", delay: "-6.2s" },
+  { offset: -2 * GAP, amp: 1.0, travel: "8.4s", drift: "8.5s", driftPx: "5px", delay: "-2.1s" },
+  { offset: -1 * GAP, amp: 1.06, travel: "9.1s", drift: "10.2s", driftPx: "-4px", delay: "-5.4s" },
+  { offset: 0, amp: 0.95, travel: "8s", drift: "9.1s", driftPx: "6px", delay: "-0.8s" },
+  { offset: 1 * GAP, amp: 1.03, travel: "9.4s", drift: "11.4s", driftPx: "-5px", delay: "-3.6s" },
+  { offset: 2 * GAP, amp: 0.98, travel: "8.7s", drift: "8.8s", driftPx: "4px", delay: "-6.2s" },
 ];
 
 /** Notes riding the ribbon. `pitch` is in half-spaces from the middle line.
@@ -48,20 +52,20 @@ const NOTES: {
   dur: string;
   delay: string;
 }[] = [
-  { x: 196, pitch: -2, glyph: "♪", size: 27, dur: "2.4s", delay: "-0.7s" },
-  { x: 252, pitch: 2, glyph: "♫", size: 25, dur: "3.1s", delay: "-1.9s" },
-  { x: 330, pitch: -4, glyph: "♩", size: 26, dur: "2.7s", delay: "-0.2s" },
-  { x: 398, pitch: 1, glyph: "♬", size: 25, dur: "2.05s", delay: "-1.4s" },
-  { x: 470, pitch: -3, glyph: "♪", size: 27, dur: "3.4s", delay: "-2.6s" },
-  { x: 546, pitch: 3, glyph: "♫", size: 25, dur: "2.25s", delay: "-0.9s" },
-  { x: 622, pitch: -1, glyph: "♪", size: 26, dur: "2.95s", delay: "-2.2s" },
-  { x: 700, pitch: -5, glyph: "♬", size: 25, dur: "2.5s", delay: "-0.4s" },
-  { x: 774, pitch: 2, glyph: "♩", size: 26, dur: "3.25s", delay: "-1.7s" },
-  { x: 846, pitch: -2, glyph: "♫", size: 25, dur: "2.15s", delay: "-2.9s" },
-  { x: 926, pitch: 4, glyph: "♪", size: 27, dur: "2.8s", delay: "-1.1s" },
-  { x: 1002, pitch: -3, glyph: "♬", size: 25, dur: "3.05s", delay: "-0.5s" },
-  { x: 1078, pitch: 1, glyph: "♪", size: 26, dur: "2.35s", delay: "-2.4s" },
-  { x: 1146, pitch: -2, glyph: "♫", size: 25, dur: "2.65s", delay: "-1.6s" },
+  { x: 196, pitch: -2, glyph: "♪", size: 37, dur: "2.4s", delay: "-0.7s" },
+  { x: 252, pitch: 2, glyph: "♫", size: 35, dur: "3.1s", delay: "-1.9s" },
+  { x: 330, pitch: -4, glyph: "♩", size: 36, dur: "2.7s", delay: "-0.2s" },
+  { x: 398, pitch: 1, glyph: "♬", size: 35, dur: "2.05s", delay: "-1.4s" },
+  { x: 470, pitch: -3, glyph: "♪", size: 37, dur: "3.4s", delay: "-2.6s" },
+  { x: 546, pitch: 3, glyph: "♫", size: 34, dur: "2.25s", delay: "-0.9s" },
+  { x: 622, pitch: -1, glyph: "♪", size: 36, dur: "2.95s", delay: "-2.2s" },
+  { x: 700, pitch: -5, glyph: "♬", size: 35, dur: "2.5s", delay: "-0.4s" },
+  { x: 774, pitch: 2, glyph: "♩", size: 36, dur: "3.25s", delay: "-1.7s" },
+  { x: 846, pitch: -2, glyph: "♫", size: 34, dur: "2.15s", delay: "-2.9s" },
+  { x: 926, pitch: 4, glyph: "♪", size: 37, dur: "2.8s", delay: "-1.1s" },
+  { x: 1002, pitch: -3, glyph: "♬", size: 35, dur: "3.05s", delay: "-0.5s" },
+  { x: 1078, pitch: 1, glyph: "♪", size: 36, dur: "2.35s", delay: "-2.4s" },
+  { x: 1146, pitch: -2, glyph: "♫", size: 34, dur: "2.65s", delay: "-1.6s" },
 ];
 
 export function ScoreFlourish({ busy = false }: { busy?: boolean }) {
@@ -75,7 +79,7 @@ export function ScoreFlourish({ busy = false }: { busy?: boolean }) {
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         preserveAspectRatio="xMinYMid slice"
-        className="h-[76px] w-full sm:h-[106px]"
+        className="h-[86px] w-full sm:h-[124px]"
         fill="none"
       >
         {/* Each line drifts vertically while its wave travels sideways — two
@@ -101,17 +105,20 @@ export function ScoreFlourish({ busy = false }: { busy?: boolean }) {
           </g>
         ))}
 
-        {/* clef — tilts and swells on its own rhythm */}
-        <g className="flourish-clef" style={{ "--clef-dur": "5.2s" } as CSSProperties}>
-          <text
-            x={96}
-            y={waveY(96, 0) + 24}
-            textAnchor="middle"
-            fill="var(--ink)"
-            style={{ fontFamily: "var(--font-music)", fontSize: 86 }}
-          >
-            𝄞
-          </text>
+        {/* clef — a slow turn and a slower breath, on nested groups so each
+            gets its own transform */}
+        <g className="flourish-clef-spin" style={{ "--spin-dur": "19s" } as CSSProperties}>
+          <g className="flourish-clef-pulse" style={{ "--pulse-dur": "13s" } as CSSProperties}>
+            <text
+              x={96}
+              y={waveY(96, 0) + 24}
+              textAnchor="middle"
+              fill="var(--ink)"
+              style={{ fontFamily: "var(--font-music)", fontSize: 74 }}
+            >
+              𝄞
+            </text>
+          </g>
         </g>
 
         {/* notes — each on its own period, so they never fall into step */}

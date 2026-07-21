@@ -68,7 +68,8 @@ body {
 /* Rotation and scale need to pivot about each element's own centre; without
    this, SVG transforms pivot about the user-space origin and swing wildly. */
 .flourish-note,
-.flourish-clef {
+.flourish-clef-spin,
+.flourish-clef-pulse {
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -88,12 +89,19 @@ body {
 }
 
 .flourish-note {
-  animation: flourish-bob var(--note-dur, 2.6s) cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+  animation: flourish-bob var(--note-dur, 2.6s) cubic-bezier(0.34, 1.12, 0.64, 1) infinite;
   animation-delay: var(--delay, 0s);
 }
 
-.flourish-clef {
-  animation: flourish-clef var(--clef-dur, 5.2s) cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
+/* The clef turns and breathes on two separate, much longer periods, stacked
+   as nested groups — one transform each, since a single element can only
+   animate `transform` once. */
+.flourish-clef-spin {
+  animation: flourish-clef-spin var(--spin-dur, 19s) ease-in-out infinite;
+}
+
+.flourish-clef-pulse {
+  animation: flourish-clef-pulse var(--pulse-dur, 13s) ease-in-out infinite;
 }
 
 /* Searching: the same motion, quickened. Multiplying each element's own
@@ -108,8 +116,11 @@ body {
 .flourish-busy .flourish-note {
   animation-duration: calc(var(--note-dur, 2.6s) * 0.45);
 }
-.flourish-busy .flourish-clef {
-  animation-duration: calc(var(--clef-dur, 5.2s) * 0.45);
+.flourish-busy .flourish-clef-spin {
+  animation-duration: calc(var(--spin-dur, 19s) * 0.4);
+}
+.flourish-busy .flourish-clef-pulse {
+  animation-duration: calc(var(--pulse-dur, 13s) * 0.4);
 }
 
 .flourish-sweep {
@@ -125,61 +136,78 @@ body {
   }
 }
 
+/* Sampled toward a sine rather than a two-stop swing, so the vertical drift
+   never eases to a visible standstill at the turn. */
 @keyframes flourish-drift {
-  0%,
-  100% {
+  0% {
     transform: translateY(calc(-1 * var(--drift, 5px)));
+  }
+  25% {
+    transform: translateY(calc(-0.32 * var(--drift, 5px)));
   }
   50% {
     transform: translateY(var(--drift, 5px));
   }
+  75% {
+    transform: translateY(calc(0.32 * var(--drift, 5px)));
+  }
+  100% {
+    transform: translateY(calc(-1 * var(--drift, 5px)));
+  }
 }
 
-/* Bouncy rather than pendulous: a quick lift, an overshoot, a small settle.
-   Multiple stops give the motion detail, which is what actually reads as
-   "smooth" — not a higher frame rate. */
+/* A lift and a small settle. Multiple stops give the motion detail, which is
+   what actually reads as "smooth" — not a higher frame rate. Kept modest so
+   the notes have life without jittering. */
 @keyframes flourish-bob {
   0% {
     transform: translateY(0) rotate(0deg) scale(1);
   }
-  22% {
-    transform: translateY(-10px) rotate(-6deg) scale(1.08);
+  24% {
+    transform: translateY(-6px) rotate(-3.5deg) scale(1.04);
   }
-  41% {
-    transform: translateY(3px) rotate(4deg) scale(0.97);
+  46% {
+    transform: translateY(2px) rotate(2deg) scale(0.985);
   }
-  58% {
-    transform: translateY(-6px) rotate(-3deg) scale(1.04);
+  68% {
+    transform: translateY(-3px) rotate(-1.5deg) scale(1.02);
   }
-  76% {
-    transform: translateY(2px) rotate(2deg) scale(0.99);
-  }
-  90% {
-    transform: translateY(-2px) rotate(-1deg) scale(1.01);
+  86% {
+    transform: translateY(1px) rotate(1deg) scale(0.995);
   }
   100% {
     transform: translateY(0) rotate(0deg) scale(1);
   }
 }
 
-@keyframes flourish-clef {
+/* Slow turn — wide enough to read as rotation, never so far the clef looks
+   upside down. */
+@keyframes flourish-clef-spin {
   0% {
-    transform: translateY(0) rotate(0deg) scale(1);
+    transform: rotate(-9deg) translateY(2px);
   }
-  24% {
-    transform: translateY(-8px) rotate(-4.5deg) scale(1.07);
+  25% {
+    transform: rotate(-2deg) translateY(-4px);
   }
-  45% {
-    transform: translateY(3px) rotate(2.5deg) scale(0.98);
+  50% {
+    transform: rotate(9deg) translateY(1px);
   }
-  67% {
-    transform: translateY(-5px) rotate(3.5deg) scale(1.04);
-  }
-  85% {
-    transform: translateY(1px) rotate(-1.5deg) scale(0.995);
+  75% {
+    transform: rotate(2deg) translateY(-5px);
   }
   100% {
-    transform: translateY(0) rotate(0deg) scale(1);
+    transform: rotate(-9deg) translateY(2px);
+  }
+}
+
+/* Slow breath, on a period unrelated to the turn. */
+@keyframes flourish-clef-pulse {
+  0%,
+  100% {
+    transform: scale(0.97);
+  }
+  50% {
+    transform: scale(1.06);
   }
 }
 
@@ -204,7 +232,8 @@ body {
   .flourish-travel,
   .flourish-drift,
   .flourish-note,
-  .flourish-clef,
+  .flourish-clef-spin,
+  .flourish-clef-pulse,
   .flourish-sweep {
     animation: none;
   }
