@@ -14,7 +14,7 @@ export default async function ComposerPage({ params }: { params: Promise<{ slug:
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-12">
       <header>
         <h1 className="text-2xl font-semibold">{composer.name}</h1>
-        <p className="text-zinc-500">
+        <p className="text-steel">
           {[lifespan, composer.nationality].filter(Boolean).join(" · ")}
         </p>
       </header>
@@ -30,7 +30,7 @@ export default async function ComposerPage({ params }: { params: Promise<{ slug:
         href={composer.imslpUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm text-zinc-500 hover:underline w-fit"
+        className="text-sm text-steel hover:underline w-fit"
       >
         View on IMSLP →
       </a>

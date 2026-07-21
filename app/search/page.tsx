@@ -32,8 +32,9 @@ export default async function SearchPage({
         <SearchBar initialQuery={query} />
       </div>
 
-      {/* Signature: the keyboard you play to find music. */}
-      <div className="mt-8 overflow-hidden rounded-[3px] ring-1 ring-hairline">
+      {/* Signature: the keyboard you play to find music. The frame seats it
+          against the dark stage the way a fallboard edges a real keyboard. */}
+      <div className="mt-8 overflow-hidden rounded-[4px] ring-1 ring-keyframe">
         <div className="piano-keys" aria-hidden="true" />
       </div>
 
@@ -44,7 +45,7 @@ export default async function SearchPage({
           <p className="max-w-lg text-[15px] leading-relaxed text-steel">
             Search by work, composer, or catalogue number — try{" "}
             <span className="font-mono text-ink">BWV 1007</span> or{" "}
-            <span className="font-display italic text-ink">Clair de lune</span>.
+            <span className="whitespace-nowrap font-display italic text-ink">Clair de lune</span>.
           </p>
         )}
       </div>

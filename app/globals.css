@@ -1,32 +1,43 @@
 @import "tailwindcss";
 
 /* Make the `dark:` variant class-based only, so the app commits to one
-   deliberate light "concert paper" theme instead of flipping on OS setting. */
+   deliberate theme instead of flipping on OS setting. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Token names describe role, not literal colour: `paper` is the page,
+   `ink` is the primary foreground. In this dark theme that means a soft
+   charcoal stage and a soft white text — no pure #000, no pure #fff. */
 :root {
-  --paper: #f4f5f6; /* page — the felt beneath the keys */
-  --ink: #0b0b0c; /* black keys, primary text */
-  --steel: #6e7075; /* secondary text */
-  --hairline: #e4e5e7; /* dividers, key seams */
-  --keywhite: #fcfcfd; /* white keys, raised surfaces */
+  --paper: #14161a; /* stage: soft charcoal, never harsh black */
+  --surface: #1b1e24; /* raised panels */
+  --ink: #e8eaee; /* primary text: soft white, never harsh white */
+  --steel: #969ca6; /* secondary text */
+  --hairline: #2a2e36; /* dividers */
+
+  /* The keyboard stays literally black and white — the one object on the
+     page that keeps its own colours regardless of the surrounding theme. */
+  --key-white: #e6e8ec; /* ivory under stage light */
+  --key-black: #101216; /* softened black key */
+  --key-seam: #c2c7cf; /* seam between white keys */
+  --key-frame: #3b404a; /* fallboard edge, so it reads as an object on dark */
 
   --background: var(--paper);
   --foreground: var(--ink);
 
-  /* The only colour on the page: a brushed-chrome sweep. Music brings colour. */
-  --chrome-h: linear-gradient(90deg, #9ca0a6, #edeff2 32%, #c4c7cc 52%, #edeff2 70%, #9ca0a6);
-  --chrome-v: linear-gradient(180deg, #9ca0a6, #edeff2 32%, #c4c7cc 52%, #edeff2 70%, #9ca0a6);
+  /* The only colour on the page: a brushed-chrome sweep, brighter on dark. */
+  --chrome-h: linear-gradient(90deg, #5c626b, #f0f2f6 32%, #b6bcc6 52%, #f0f2f6 70%, #5c626b);
+  --chrome-v: linear-gradient(180deg, #5c626b, #f0f2f6 32%, #b6bcc6 52%, #f0f2f6 70%, #5c626b);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-paper: var(--paper);
+  --color-surface: var(--surface);
   --color-ink: var(--ink);
   --color-steel: var(--steel);
   --color-hairline: var(--hairline);
-  --color-keywhite: var(--keywhite);
+  --color-keyframe: var(--key-frame);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-bodoni);
@@ -44,32 +55,32 @@ body {
 }
 
 /* ── Signature: a piano keyboard rendered entirely in CSS ─────────────────
-   White keys are hairline-seamed cells; black keys follow the real 2–3
-   grouping across each octave (none after E or B). The one true
-   black-and-white object on the page — kept slim so it reads as elegant. */
+   White keys are seamed cells; black keys follow the real 2–3 grouping
+   across each octave (none after E or B). On the dark stage it becomes the
+   brightest object on the page — lit keys in a dark hall. */
 .piano-keys {
   --u: 22px; /* white-key width */
   --oct: calc(var(--u) * 7); /* seven white keys to an octave */
   height: 44px;
-  background-color: var(--keywhite);
+  background-color: var(--key-white);
   background-image:
     /* black keys: five bars per octave, positioned as % of the octave */
     linear-gradient(
       90deg,
       transparent 0 9.857%,
-      var(--ink) 9.857% 18.714%,
+      var(--key-black) 9.857% 18.714%,
       transparent 18.714% 24.143%,
-      var(--ink) 24.143% 33%,
+      var(--key-black) 24.143% 33%,
       transparent 33% 52.714%,
-      var(--ink) 52.714% 61.571%,
+      var(--key-black) 52.714% 61.571%,
       transparent 61.571% 67%,
-      var(--ink) 67% 75.857%,
+      var(--key-black) 67% 75.857%,
       transparent 75.857% 81.286%,
-      var(--ink) 81.286% 90.143%,
+      var(--key-black) 81.286% 90.143%,
       transparent 90.143% 100%
     ),
     /* white-key seams */
-    repeating-linear-gradient(90deg, transparent 0 calc(var(--u) - 1px), var(--hairline) calc(var(--u) - 1px) var(--u));
+    repeating-linear-gradient(90deg, transparent 0 calc(var(--u) - 1px), var(--key-seam) calc(var(--u) - 1px) var(--u));
   background-size:
     var(--oct) 60%,
     auto;
