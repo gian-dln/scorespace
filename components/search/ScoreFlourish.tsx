@@ -10,23 +10,43 @@ const AMP = 15; /* how far the ribbon swells */
 const WAVELENGTH = 540;
 const GAP = 9; /* distance between stave lines */
 const STEP = 4.5; /* half a stave space — one pitch step */
-const SAMPLE = 4; /* px between sampled points; finer = smoother curve */
-
 /** Vertical position of the ribbon at x, for a line sitting `offset` from its centre. */
 function waveY(x: number, offset: number, ampScale = 1): number {
   return BASE_Y + offset + AMP * ampScale * Math.sin((2 * Math.PI * x) / WAVELENGTH);
 }
 
-/** A stave line, sampled along the sine. It is drawn a full wavelength beyond
- *  each edge so the line can be slid sideways by exactly one wavelength and
- *  land on an identical shape — which is what makes the travel seamless and
- *  lets it run on `linear` timing with no stop at either end. */
+/** Slope of the ribbon at x — used to place Bézier control handles. */
+function waveSlope(x: number, ampScale: number): number {
+  return AMP * ampScale * ((2 * Math.PI) / WAVELENGTH) * Math.cos((2 * Math.PI * x) / WAVELENGTH);
+}
+
+/** A stave line as cubic Béziers, one per quarter wavelength.
+ *
+ *  This was previously ~570 sampled line segments per line. A sine is very
+ *  nearly exact as a cubic over a quarter period (Hermite handles at dx/3
+ *  along the tangent), so this is both a true curve — no faceting at any
+ *  zoom — and ~97% less path data to rasterise on every animation frame.
+ *
+ *  It is drawn a full wavelength beyond each edge so the line can be slid
+ *  sideways by exactly one wavelength and land on an identical shape, which
+ *  is what makes the travel seamless under `linear` timing. */
 function wavePath(offset: number, ampScale: number): string {
-  const points: string[] = [];
-  for (let x = -WAVELENGTH; x <= WIDTH + WAVELENGTH; x += SAMPLE) {
-    points.push(`${x === -WAVELENGTH ? "M" : "L"}${x} ${waveY(x, offset, ampScale).toFixed(2)}`);
+  const seg = WAVELENGTH / 4;
+  const start = -WAVELENGTH;
+  const end = WIDTH + WAVELENGTH;
+
+  let d = `M${start} ${waveY(start, offset, ampScale).toFixed(2)}`;
+  for (let x = start; x < end; x += seg) {
+    const x1 = Math.min(x + seg, end);
+    const dx = x1 - x;
+    const c1y = waveY(x, offset, ampScale) + (waveSlope(x, ampScale) * dx) / 3;
+    const c2y = waveY(x1, offset, ampScale) - (waveSlope(x1, ampScale) * dx) / 3;
+    d +=
+      ` C${(x + dx / 3).toFixed(2)} ${c1y.toFixed(2)}` +
+      ` ${(x1 - dx / 3).toFixed(2)} ${c2y.toFixed(2)}` +
+      ` ${x1.toFixed(2)} ${waveY(x1, offset, ampScale).toFixed(2)}`;
   }
-  return points.join(" ");
+  return d;
 }
 
 /** Every line gets its own travel and drift period. The durations share no
