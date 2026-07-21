@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { Composer, Score, Work } from "@/types";
 import type { ImslpPageResponse, ImslpSearchHit } from "./types";
 
@@ -23,7 +24,7 @@ export function parseWorkFromImslpPage(raw: ImslpPageResponse): Work | null {
     yearComposed: extractInfoboxField(wikitext, "Year/Date of Composition"),
     instrumentation: extractInfoboxField(wikitext, "Instrumentation"),
     keySignature: extractTemplateValue(wikitext, "Key"),
-    scores: extractScores(wikitext, page.fullurl ? withProtocol(page.fullurl) : undefined),
+    scores: extractScores(wikitext),
     updatedAt: new Date().toISOString(),
     complete: true,
   };
@@ -120,26 +121,72 @@ function extractNumberField(wikitext: string, field: string): number | undefined
   return match ? Number(match[0]) : undefined;
 }
 
-/** Scores are listed in one or more {{#fte:imslpfile ...}} blocks, each with
- * "File Name N=foo.pdf" / "File Description N=..." pairs. IMSLP serves the
- * actual PDFs from hashed mirror URLs that can't be derived from wikitext
- * alone, so score links point at the work page itself. */
-function extractScores(wikitext: string, workUrl?: string): Score[] {
+/** Scores live in one or more {{#fte:imslpfile ...}} blocks. Each block can
+ * hold several numbered files: "File Name N=foo.pdf" paired with
+ * "File Description N=...". IMSLP doesn't store the PDF's URL in wikitext, but
+ * the file is served from MediaWiki's canonical hash path, which we can rebuild
+ * from the filename alone (see imslpFileUrl) — so each score links straight to
+ * its PDF. */
+function extractScores(wikitext: string): Score[] {
   const scores: Score[] = [];
-  const fallbackUrl = workUrl ?? "https://imslp.org";
 
-  for (const block of wikitext.matchAll(/\{\{#fte:imslpfile([\s\S]*?)\}\}/g)) {
-    const body = block[1];
-    for (const fileMatch of body.matchAll(/File Name \d*=\s*([^\n]+\.pdf)/gi)) {
-      const filename = fileMatch[1].trim();
-      const descMatch = body.match(/File Description \d*=\s*([^\n]+)/i);
-      scores.push({
-        id: `score-${scores.length}`,
-        label: descMatch?.[1]?.trim() || filename.replace(/\.pdf$/i, "").replace(/[_-]/g, " "),
-        url: fallbackUrl,
-      });
+  for (const body of extractBalancedBlocks(wikitext, "{{#fte:imslpfile")) {
+    // Map "File Description N" by its index N so we can pair it to "File Name N".
+    const descriptions = new Map<string, string>();
+    for (const m of body.matchAll(/\|\s*File Description\s*(\d*)\s*=\s*([^\n|]*)/gi)) {
+      const desc = m[2].trim().replace(/\[\[|\]\]/g, "");
+      if (desc) descriptions.set(m[1], desc);
+    }
+
+    for (const m of body.matchAll(/\|\s*File Name\s*(\d*)\s*=\s*([^\n|]*?\.pdf)/gi)) {
+      const filename = m[2].trim();
+      const label = descriptions.get(m[1]) || filename.replace(/\.pdf$/i, "").replace(/[_-]+/g, " ").trim();
+      scores.push({ id: `score-${scores.length}`, label, url: imslpFileUrl(filename) });
     }
   }
 
   return scores;
+}
+
+/** Returns the inner body of each `${open} ... }}` template, matching braces so
+ * nested templates (e.g. {{LinkEd|...}}) don't terminate the block early — the
+ * flaw that made the old single-regex approach drop every file after the first. */
+function extractBalancedBlocks(wikitext: string, open: string): string[] {
+  const bodies: string[] = [];
+  let i = wikitext.indexOf(open);
+
+  while (i !== -1) {
+    let depth = 0;
+    let j = i;
+    for (; j < wikitext.length - 1; j++) {
+      if (wikitext[j] === "{" && wikitext[j + 1] === "{") {
+        depth++;
+        j++;
+      } else if (wikitext[j] === "}" && wikitext[j + 1] === "}") {
+        depth--;
+        j++;
+        if (depth === 0) break;
+      }
+    }
+    bodies.push(wikitext.slice(i + open.length, j - 1));
+    i = wikitext.indexOf(open, j + 1);
+  }
+
+  return bodies;
+}
+
+/** Rebuilds a file's canonical IMSLP URL from its name. MediaWiki stores each
+ * upload at /images/<h>/<hh>/<Canonical_Name>, where the hash is md5 of the
+ * canonical title (trimmed, whitespace → underscores, first letter uppercased)
+ * and <h>/<hh> are its first one/two hex chars. Verified against IMSLP's
+ * imageinfo API. Note: this is the true PDF; IMSLP may show a one-time bot-check
+ * before serving it to a cold visitor. */
+function imslpFileUrl(rawFilename: string): string {
+  const name = capitalizeFirst(rawFilename.trim().replace(/\s+/g, "_"));
+  const hash = createHash("md5").update(name).digest("hex");
+  return `https://imslp.org/images/${hash[0]}/${hash.slice(0, 2)}/${encodeURIComponent(name)}`;
+}
+
+function capitalizeFirst(s: string): string {
+  return s.length ? s[0].toUpperCase() + s.slice(1) : s;
 }
