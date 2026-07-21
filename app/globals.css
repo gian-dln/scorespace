@@ -65,44 +65,121 @@ body {
    their own slower rhythm, as if riding it. Idle it is a quiet flourish;
    while a search runs the motion quickens and a chrome playhead sweeps
    across, so waiting reads as progress rather than a stall. */
-.flourish-line {
-  animation: flourish-undulate 7s ease-in-out infinite;
+/* Rotation and scale need to pivot about each element's own centre; without
+   this, SVG transforms pivot about the user-space origin and swing wildly. */
+.flourish-note,
+.flourish-clef {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* The wave itself travels sideways. Because the path is a sine sampled over
+   whole wavelengths, shifting it by exactly one wavelength is seamless — so
+   `linear` timing gives continuous motion with no dead stop at the turn. */
+.flourish-travel {
+  animation: flourish-travel var(--travel-dur, 13s) linear infinite;
+}
+
+/* A slow vertical drift layered under the travel, on an unrelated period, so
+   the ribbon never settles into a repeating pose. */
+.flourish-drift {
+  animation: flourish-drift var(--drift-dur, 9s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
 }
 
 .flourish-note {
-  animation: flourish-bob 4.5s ease-in-out infinite;
+  animation: flourish-bob var(--note-dur, 2.6s) cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+  animation-delay: var(--delay, 0s);
 }
 
-/* Searching: same motion, quickened — the page feels like it's working. */
-.flourish-busy .flourish-line {
-  animation-duration: 2.8s;
+.flourish-clef {
+  animation: flourish-clef var(--clef-dur, 5.2s) cubic-bezier(0.34, 1.4, 0.64, 1) infinite;
 }
 
+/* Searching: the same motion, quickened. Multiplying each element's own
+   duration keeps the de-synchronisation intact instead of snapping
+   everything onto one shared beat. */
+.flourish-busy .flourish-travel {
+  animation-duration: calc(var(--travel-dur, 13s) * 0.35);
+}
+.flourish-busy .flourish-drift {
+  animation-duration: calc(var(--drift-dur, 9s) * 0.45);
+}
 .flourish-busy .flourish-note {
-  animation-duration: 1.8s;
+  animation-duration: calc(var(--note-dur, 2.6s) * 0.45);
+}
+.flourish-busy .flourish-clef {
+  animation-duration: calc(var(--clef-dur, 5.2s) * 0.45);
 }
 
 .flourish-sweep {
   animation: flourish-sweep 1.6s ease-in-out infinite;
 }
 
-@keyframes flourish-undulate {
-  0%,
-  100% {
-    transform: translateY(-3px);
+@keyframes flourish-travel {
+  from {
+    transform: translateX(0);
   }
-  50% {
-    transform: translateY(3px);
+  to {
+    transform: translateX(calc(-1 * var(--wave, 540px)));
   }
 }
 
-@keyframes flourish-bob {
+@keyframes flourish-drift {
   0%,
   100% {
-    transform: translateY(4px);
+    transform: translateY(calc(-1 * var(--drift, 5px)));
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(var(--drift, 5px));
+  }
+}
+
+/* Bouncy rather than pendulous: a quick lift, an overshoot, a small settle.
+   Multiple stops give the motion detail, which is what actually reads as
+   "smooth" — not a higher frame rate. */
+@keyframes flourish-bob {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  22% {
+    transform: translateY(-10px) rotate(-6deg) scale(1.08);
+  }
+  41% {
+    transform: translateY(3px) rotate(4deg) scale(0.97);
+  }
+  58% {
+    transform: translateY(-6px) rotate(-3deg) scale(1.04);
+  }
+  76% {
+    transform: translateY(2px) rotate(2deg) scale(0.99);
+  }
+  90% {
+    transform: translateY(-2px) rotate(-1deg) scale(1.01);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes flourish-clef {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  24% {
+    transform: translateY(-8px) rotate(-4.5deg) scale(1.07);
+  }
+  45% {
+    transform: translateY(3px) rotate(2.5deg) scale(0.98);
+  }
+  67% {
+    transform: translateY(-5px) rotate(3.5deg) scale(1.04);
+  }
+  85% {
+    transform: translateY(1px) rotate(-1.5deg) scale(0.995);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
   }
 }
 
@@ -124,8 +201,10 @@ body {
 /* Quality floor: honour a reduced-motion preference. The flourish still
    renders in its resting shape — it just stops moving. */
 @media (prefers-reduced-motion: reduce) {
-  .flourish-line,
+  .flourish-travel,
+  .flourish-drift,
   .flourish-note,
+  .flourish-clef,
   .flourish-sweep {
     animation: none;
   }
