@@ -1,7 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -17,16 +15,32 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full gap-2">
-      <Input
+    <form
+      onSubmit={handleSubmit}
+      className="group relative flex items-center gap-3 border-b border-hairline pb-3 focus-within:border-transparent"
+    >
+      <input
         type="search"
         name="q"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search for a work, composer, or catalog number…"
-        aria-label="Search IMSLP"
+        placeholder="Search a work, composer, or catalogue number…"
+        aria-label="Search the IMSLP catalogue"
+        className="min-w-0 flex-1 bg-transparent text-lg text-ink placeholder:text-steel/80 focus:outline-none"
       />
-      <Button type="submit">Search</Button>
+      {/* barline: a musical divider that also separates field from action */}
+      <span aria-hidden className="h-5 w-px bg-hairline" />
+      <button
+        type="submit"
+        className="shrink-0 font-mono text-xs uppercase tracking-[0.2em] text-ink hover:text-steel"
+      >
+        Search
+      </button>
+      {/* chrome underline appears on focus — colour arrives when you play */}
+      <span
+        aria-hidden
+        className="chrome-h pointer-events-none absolute inset-x-0 -bottom-px h-px opacity-0 group-focus-within:opacity-100"
+      />
     </form>
   );
 }

@@ -2,16 +2,19 @@ import Link from "next/link";
 
 export function Header() {
   return (
-    <header className="border-b border-black/10 dark:border-white/15">
+    <header className="border-b border-hairline">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-lg font-semibold">
+        <Link href="/" className="font-display text-xl tracking-tight text-ink">
           ScoreSpace
         </Link>
-        <nav className="text-sm text-zinc-500">
-          <a href="https://imslp.org" target="_blank" rel="noopener noreferrer" className="hover:underline">
-            Powered by IMSLP
-          </a>
-        </nav>
+        <a
+          href="https://imslp.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-mono text-[11px] uppercase tracking-[0.22em] text-steel hover:text-ink"
+        >
+          Powered by IMSLP
+        </a>
       </div>
     </header>
   );
