@@ -25,6 +25,7 @@ export function parseWorkFromImslpPage(raw: ImslpPageResponse): Work | null {
     keySignature: extractTemplateValue(wikitext, "Key"),
     scores: extractScores(wikitext, page.fullurl ? withProtocol(page.fullurl) : undefined),
     updatedAt: new Date().toISOString(),
+    complete: true,
   };
 }
 
@@ -45,6 +46,7 @@ export function parseComposerFromImslpPage(raw: ImslpPageResponse): Composer | n
     birthYear: extractNumberField(wikitext, "Born Year"),
     deathYear: extractNumberField(wikitext, "Died Year"),
     nationality: extractInfoboxField(wikitext, "Nationality"),
+    complete: true,
   };
 }
 
@@ -62,6 +64,7 @@ export function workFromSearchHit(hit: ImslpSearchHit): Work | null {
     imslpUrl: `https://imslp.org/wiki/${encodeURIComponent(hit.title.replace(/ /g, "_"))}`,
     scores: [],
     updatedAt: new Date().toISOString(),
+    complete: false,
   };
 }
 
@@ -73,6 +76,7 @@ export function composerFromSearchHit(hit: ImslpSearchHit): Composer | null {
     id: name,
     name,
     imslpUrl: `https://imslp.org/wiki/${encodeURIComponent(hit.title.replace(/ /g, "_"))}`,
+    complete: false,
   };
 }
 

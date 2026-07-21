@@ -56,7 +56,10 @@ export async function upsertComposer(composer: Composer): Promise<void> {
  * `id` is the work's exact IMSLP page title, e.g. "Symphony No.1, Op.21 (Beethoven, Ludwig van)". */
 export async function getWork(id: string): Promise<Work | null> {
   const cached = await getCachedWork(id);
-  if (cached && isFresh(cached.updatedAt)) return cached;
+  // Only serve a cached record that is both fresh AND a full page parse.
+  // Incomplete stubs (from an older build that cached search hits) fall
+  // through to a live fetch, which overwrites them with a complete record.
+  if (cached?.complete && isFresh(cached.updatedAt)) return cached;
 
   const raw = await getImslpPage(id);
   const work = parseWorkFromImslpPage(raw);
@@ -70,7 +73,9 @@ export async function getWork(id: string): Promise<Work | null> {
  * IMSLP page lives at "Category:<name>", so we add that prefix here. */
 export async function getComposer(id: string): Promise<Composer | null> {
   const cached = await getCachedComposer(id);
-  if (cached) return cached; // composer bios change rarely; no TTL needed
+  // Composer bios change rarely, so no TTL — but only serve a full record;
+  // incomplete stubs fall through to a live fetch that fills in the bio.
+  if (cached?.complete) return cached;
 
   const raw = await getImslpPage(`Category:${id}`);
   const composer = parseComposerFromImslpPage(raw);
@@ -80,15 +85,16 @@ export async function getComposer(id: string): Promise<Composer | null> {
   return composer;
 }
 
-/** Search always hits IMSLP live (results are query-specific and cheap to compute),
- * but backfills the work/composer cache so subsequent detail-page loads are fast. */
+/** Search always hits IMSLP live (results are query-specific and cheap to compute).
+ * It intentionally does NOT cache results: search hits are lightweight stubs
+ * (no scores, no metadata), so caching them would (a) serve empty detail pages
+ * on click and (b) clobber any complete record a prior detail visit had cached.
+ * The work/composer detail pages own the cache — they store full records. */
 export async function search(query: string): Promise<SearchResult> {
   const [workHits, composerHits] = await Promise.all([searchImslpWorks(query), searchImslpComposers(query)]);
 
   const works = workHits.query.search.map(workFromSearchHit).filter((w): w is Work => w !== null);
   const composers = composerHits.query.search.map(composerFromSearchHit).filter((c): c is Composer => c !== null);
-
-  await Promise.all([...works.map(upsertWork), ...composers.map(upsertComposer)]);
 
   return { query, works, composers, total: works.length + composers.length };
 }

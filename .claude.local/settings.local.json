@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p app/search app/work/\\\\[id\\\\] app/composer/\\\\[slug\\\\] app/api/search app/api/work/\\\\[id\\\\] app/api/composer/\\\\[slug\\\\] lib/imslp lib/supabase components/ui components/search components/work components/layout types *)",
+      "Bash(npx tsc *)",
+      "Bash(npx next *)",
+      "Bash(mkdir -p /Users/gian/repos/scorespace/.claude)",
+      "Bash(curl -s \"https://imslp.org/api.php?action=query&format=json&list=search&srsearch=Beethoven%20Symphony&srlimit=5\" -H \"User-Agent: ScoreSpace/0.1 \\(contact: deleong@tcd.ie\\)\")",
+      "Bash(curl -s \"https://imslp.org/api.php?action=opensearch&format=json&search=Beethoven%20Symphony&limit=5\" -H \"User-Agent: ScoreSpace/0.1 \\(contact: deleong@tcd.ie\\)\")",
+      "Bash(curl -s -G https://imslp.org/api.php --data-urlencode action=query --data-urlencode format=json --data-urlencode 'prop=revisions|info' --data-urlencode rvprop=content --data-urlencode rvslots=main --data-urlencode inprop=url --data-urlencode 'titles=Symphony No.1, Op.21 \\(Beethoven, Ludwig van\\)' -H 'User-Agent: ScoreSpace/0.1 \\(contact: deleong@tcd.ie\\)')",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}

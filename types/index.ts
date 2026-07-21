@@ -9,6 +9,10 @@ export interface Composer {
   deathYear?: number;
   nationality?: string;
   workCount?: number;
+  // True only for records parsed from a full IMSLP page. Search hits produce
+  // lightweight stubs (complete: false) with no bio fields — the cache must
+  // not serve those to a detail page, so getComposer re-fetches when false.
+  complete?: boolean;
 }
 
 export interface Score {
@@ -31,6 +35,10 @@ export interface Work {
   description?: string;
   scores: Score[];
   updatedAt: string; // ISO timestamp, used for cache freshness
+  // True only for records parsed from a full IMSLP page. Search hits produce
+  // lightweight stubs (complete: false) with empty scores — the cache must not
+  // serve those to a detail page, so getWork re-fetches when false.
+  complete?: boolean;
 }
 
 export interface SearchResult {
