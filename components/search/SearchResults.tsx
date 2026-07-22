@@ -25,7 +25,7 @@ export function SearchResults({ results }: { results: SearchResult }) {
               <li key={composer.id}>
                 <Link
                   href={`/composer/${encodeURIComponent(composer.id)}`}
-                  className="inline-flex rounded-full border border-hairline px-3.5 py-1.5 text-sm text-ink hover:border-ink hover:bg-ink hover:text-paper"
+                  className="press inline-flex rounded-full border border-hairline px-3.5 py-1.5 text-sm text-ink hover:border-ink hover:bg-ink hover:text-paper"
                 >
                   {composer.name}
                 </Link>

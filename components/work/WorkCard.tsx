@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export function WorkCard({ work }: { work: Work }) {
   return (
-    <Link href={`/work/${encodeURIComponent(work.id)}`} className="group block">
+    <Link href={`/work/${encodeURIComponent(work.id)}`} className="press group block">
       <Card className="relative h-full overflow-hidden">
         {/* chrome edge lights up on hover */}
         <span

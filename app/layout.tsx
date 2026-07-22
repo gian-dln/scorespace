@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bodoni_Moda, Geist, Geist_Mono } from "next/font/google";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { PageTransition } from "@/components/layout/PageTransition";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,7 +41,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Header />
-        <main className="flex flex-1 flex-col">{children}</main>
+        {/* Only the content region transitions — the header and footer stay
+            put, so the frame around the app never moves. */}
+        <main className="flex flex-1 flex-col">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
       </body>
     </html>

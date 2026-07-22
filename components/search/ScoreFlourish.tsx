@@ -141,23 +141,32 @@ export function ScoreFlourish({ busy = false }: { busy?: boolean }) {
           </g>
         </g>
 
-        {/* notes — each on its own period, so they never fall into step */}
+        {/* notes — each on its own period, so they never fall into step.
+            bob / sway / pulse are nested so a single transform each stays
+            smooth; the three periods drift apart for organic motion. */}
         {NOTES.map((note) => (
           <g
             key={note.x}
-            className="flourish-note"
+            className="flourish-note-bob"
             style={{ "--note-dur": note.dur, "--delay": note.delay } as CSSProperties}
           >
-            <text
-              x={note.x}
-              y={waveY(note.x, note.pitch * STEP)}
-              textAnchor="middle"
-              fill="var(--ink)"
-              fillOpacity={0.9}
-              style={{ fontFamily: "var(--font-music)", fontSize: note.size }}
-            >
-              {note.glyph}
-            </text>
+            <g className="flourish-note-sway" style={{ "--note-dur": note.dur, "--delay": note.delay } as CSSProperties}>
+              <g
+                className="flourish-note-pulse"
+                style={{ "--note-dur": note.dur, "--delay": note.delay } as CSSProperties}
+              >
+                <text
+                  x={note.x}
+                  y={waveY(note.x, note.pitch * STEP)}
+                  textAnchor="middle"
+                  fill="var(--ink)"
+                  fillOpacity={0.9}
+                  style={{ fontFamily: "var(--font-music)", fontSize: note.size }}
+                >
+                  {note.glyph}
+                </text>
+              </g>
+            </g>
           </g>
         ))}
       </svg>
