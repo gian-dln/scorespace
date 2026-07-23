@@ -357,3 +357,142 @@ body {
 .chrome-v {
   background-image: var(--chrome-v);
 }
+
+/* ── Home hero: an inked musical flourish ──────────────────────────────────
+   A treble clef, calligraphic ribbons, spiral scrolls and beamed notes, each
+   component drawn by hand in sequence, then left gently alive. Every stroke
+   uses stroke-dashoffset over pathLength=1 (no path measuring); idle motion is
+   transform-only so it stays on the compositor. */
+
+/* Each component draws itself. `--dur`/`--delay` are set per element so the
+   whole scene inks in a deliberate order.
+
+   opacity:0 until the draw begins: a round line-cap renders a dot even when
+   the dash is fully offset, so an undrawn path would otherwise sit on screen
+   as a stray point (the "guideline dots"). The keyframe flips opacity on at
+   0%, i.e. the instant this path's turn comes, so nothing shows early. */
+.mg-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  animation: mg-draw var(--dur, 0.9s) cubic-bezier(0.22, 1, 0.36, 1) var(--delay, 0s) forwards;
+}
+
+@keyframes mg-draw {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* Noteheads wash in as solid fills. */
+.mg-fill {
+  opacity: 0;
+  animation: mg-fade var(--fdur, 0.5s) ease forwards;
+  animation-delay: var(--delay, 1s);
+}
+
+@keyframes mg-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* The clef simply fades and settles in — a reliable, elegant entrance rather
+   than a stroke trace, which a filled glyph can't do cleanly. */
+.mg-clef-in {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: mg-clef-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+
+@keyframes mg-clef-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Idle life once inked. The whole scene sways as one, on a long slow period,
+   and begins only after the drawing finishes (var --idle). */
+.mg-idle {
+  transform-box: fill-box;
+  transform-origin: 55% 60%;
+  animation: mg-sway 11s ease-in-out var(--idle, 3.2s) infinite;
+}
+
+/* Starts and ends at identity — the resting, just-drawn position — so idle
+   life eases out of stillness instead of snapping to an offset pose. */
+@keyframes mg-sway {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  33% {
+    transform: rotate(-0.7deg) translateY(-1.2px);
+  }
+  66% {
+    transform: rotate(0.7deg) translateY(1.2px);
+  }
+}
+
+/* Notes and scrolls carry their own subtle drift on top of the scene sway, on
+   per-element periods so nothing beats in lockstep — minimal, never static. */
+.mg-drift {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mg-drift var(--drift-dur, 5s) ease-in-out var(--drift-delay, 3.4s) infinite;
+}
+
+@keyframes mg-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-1.8px) rotate(-0.8deg);
+  }
+  65% {
+    transform: translateY(1.5px) rotate(0.7deg);
+  }
+}
+
+/* A faint luminosity around the whole flourish; lifts on hover. */
+.mg-glow {
+  filter: drop-shadow(0 0 5px rgba(232, 234, 238, 0.14));
+  transition: filter 450ms ease;
+}
+
+.mg-scene:hover .mg-glow {
+  filter: drop-shadow(0 0 10px rgba(232, 234, 238, 0.3));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Skip the inking and idle drift; present the finished flourish, still. */
+  .mg-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .mg-fill {
+    animation: none;
+    opacity: 1;
+  }
+  .mg-clef-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .mg-idle,
+  .mg-drift {
+    animation: none;
+  }
+}
