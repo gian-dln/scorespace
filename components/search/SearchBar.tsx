@@ -19,6 +19,12 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
       onSubmit={handleSubmit}
       className="group relative flex items-center gap-3 border-b border-hairline pb-3 focus-within:border-transparent"
     >
+      {/* lift panel: a soft raised surface that rises behind the field on
+          focus, so the bar reads as coming forward off the (blurred) page */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -inset-x-5 -inset-y-4 -z-10 rounded-2xl bg-surface opacity-0 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] ring-1 ring-hairline transition duration-300 ease-out group-focus-within:opacity-100"
+      />
       <input
         type="search"
         name="q"
@@ -36,10 +42,10 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
       >
         Search
       </button>
-      {/* chrome underline appears on focus — colour arrives when you play */}
+      {/* chrome highlight: pops in from the centre when focused, out on blur */}
       <span
         aria-hidden
-        className="chrome-h pointer-events-none absolute inset-x-0 -bottom-px h-px opacity-0 group-focus-within:opacity-100"
+        className="chrome-h pointer-events-none absolute inset-x-0 -bottom-px h-[2px] origin-center scale-x-0 rounded-full opacity-0 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-focus-within:scale-x-100 group-focus-within:opacity-100"
       />
     </form>
   );

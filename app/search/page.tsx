@@ -34,8 +34,9 @@ export default async function SearchPage({
   const query = q?.trim() ?? "";
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-6 py-16 sm:py-20">
-      <header className="flex flex-col gap-3">
+    <div className="group/search mx-auto w-full max-w-4xl px-6 py-16 sm:py-20">
+      {/* the headline recedes and blurs while the field is focused */}
+      <header className="flex flex-col gap-3 transition duration-300 ease-out group-focus-within/search:scale-[0.99] group-focus-within/search:opacity-40 group-focus-within/search:blur-[5px] motion-reduce:group-focus-within/search:scale-100">
         <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-steel">
           {query ? "Search results" : "Public-domain score library"}
         </span>
@@ -44,36 +45,39 @@ export default async function SearchPage({
         </h1>
       </header>
 
-      <div className="mt-8">
+      {/* the field itself comes forward */}
+      <div className="relative z-10 mt-8 transition-transform duration-300 ease-out group-focus-within/search:scale-[1.03] motion-reduce:group-focus-within/search:scale-100">
         <SearchBar initialQuery={query} />
       </div>
 
-      {query ? (
-        <Suspense
-          key={query}
-          fallback={
-            <>
-              <div className="mt-8">
-                <ScoreFlourish busy />
-              </div>
-              <p className="mt-6 font-mono text-xs text-steel">Searching the catalogue…</p>
-            </>
-          }
-        >
-          <Results query={query} />
-        </Suspense>
-      ) : (
-        <>
-          <div className="mt-8">
-            <ScoreFlourish />
-          </div>
-          <p className="mt-14 max-w-lg text-[15px] leading-relaxed text-steel">
-            Search by work, composer, or catalogue number — try{" "}
-            <span className="font-mono text-ink">BWV 1007</span> or{" "}
-            <span className="whitespace-nowrap font-display italic text-ink">Clair de lune</span>.
-          </p>
-        </>
-      )}
+      <div className="transition duration-300 ease-out group-focus-within/search:scale-[0.99] group-focus-within/search:opacity-40 group-focus-within/search:blur-[5px] motion-reduce:group-focus-within/search:scale-100">
+        {query ? (
+          <Suspense
+            key={query}
+            fallback={
+              <>
+                <div className="mt-8">
+                  <ScoreFlourish busy />
+                </div>
+                <p className="mt-6 font-mono text-xs text-steel">Searching the catalogue…</p>
+              </>
+            }
+          >
+            <Results query={query} />
+          </Suspense>
+        ) : (
+          <>
+            <div className="mt-8">
+              <ScoreFlourish />
+            </div>
+            <p className="mt-14 max-w-lg text-[15px] leading-relaxed text-steel">
+              Search by work, composer, or catalogue number — try{" "}
+              <span className="font-mono text-ink">BWV 1007</span> or{" "}
+              <span className="whitespace-nowrap font-display italic text-ink">Clair de lune</span>.
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }

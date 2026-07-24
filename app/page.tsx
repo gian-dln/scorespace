@@ -3,10 +3,13 @@ import { SearchBar } from "@/components/search/SearchBar";
 
 export default function Home() {
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-8 px-6 py-20 text-center">
-      <MusicalGrowth />
+    <div className="group/search mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-8 px-6 py-20 text-center">
+      {/* everything but the field recedes and blurs while the field is focused */}
+      <div className="transition duration-300 ease-out group-focus-within/search:scale-[0.98] group-focus-within/search:opacity-40 group-focus-within/search:blur-[5px] motion-reduce:group-focus-within/search:scale-100">
+        <MusicalGrowth />
+      </div>
 
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-3 transition duration-300 ease-out group-focus-within/search:scale-[0.98] group-focus-within/search:opacity-40 group-focus-within/search:blur-[5px] motion-reduce:group-focus-within/search:scale-100">
         <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-steel">
           Public-domain score library
         </span>
@@ -18,7 +21,8 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="w-full max-w-xl">
+      {/* the field itself comes forward */}
+      <div className="relative z-10 w-full max-w-xl transition-transform duration-300 ease-out group-focus-within/search:scale-[1.05] motion-reduce:group-focus-within/search:scale-100">
         <SearchBar />
       </div>
     </div>
