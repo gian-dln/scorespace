@@ -66,7 +66,7 @@ function EighthNote({
   driftDur: string;
   driftDelay: string;
 }) {
-  const sx = hx + 5.5;
+  const sx = hx + 4.5; // inset from the tilted head's edge so the stem base overlaps solidly
   const top = hy - 30;
   return (
     <g className="mg-drift" style={{ "--drift-dur": driftDur, "--drift-delay": driftDelay } as CSSProperties}>
@@ -101,8 +101,8 @@ function EighthNote({
 function BeamedPair({ x, y, t, driftDur, driftDelay }: { x: number; y: number; t: number; driftDur: string; driftDelay: string }) {
   const gap = 22;
   const beamY = y - 30;
-  const s1 = x + 5.5;
-  const s2 = x + gap + 5.5;
+  const s1 = x + 4.5; // inset from the tilted heads' edges so stem bases overlap solidly
+  const s2 = x + gap + 4.5;
   return (
     <g className="mg-drift" style={{ "--drift-dur": driftDur, "--drift-delay": driftDelay } as CSSProperties}>
       {[x, x + gap].map((hx, i) => (
