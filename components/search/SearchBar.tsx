@@ -16,6 +16,8 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
 
   return (
     <form
+      action="/search"
+      method="get"
       onSubmit={handleSubmit}
       className="group relative flex items-center gap-3 border-b border-hairline pb-3 focus-within:border-transparent"
     >
