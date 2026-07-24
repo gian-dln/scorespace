@@ -45,8 +45,8 @@ export default async function SearchPage({
         </h1>
       </header>
 
-      {/* the field enlarges and comes forward */}
-      <div className="relative z-10 mt-8 origin-top will-change-transform transition-transform duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-focus-within/search:scale-[1.06] motion-reduce:group-focus-within/search:scale-100">
+      {/* the field enlarges and comes forward (sm+ only; no zoom on phones) */}
+      <div className="relative z-10 mt-8 origin-top will-change-transform transition-transform duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-focus-within/search:scale-[1.06] sm:motion-reduce:group-focus-within/search:scale-100">
         <SearchBar initialQuery={query} />
       </div>
 
