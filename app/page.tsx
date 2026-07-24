@@ -21,8 +21,8 @@ export default function Home() {
         </p>
       </div>
 
-      {/* the field itself comes forward */}
-      <div className="relative z-10 w-full max-w-xl transition-transform duration-300 ease-out group-focus-within/search:scale-[1.05] motion-reduce:group-focus-within/search:scale-100">
+      {/* the field rises toward centre and enlarges as it comes forward */}
+      <div className="relative z-10 w-full max-w-xl will-change-transform transition-transform duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-focus-within/search:-translate-y-[13vh] group-focus-within/search:scale-[1.14] motion-reduce:group-focus-within/search:translate-y-0 motion-reduce:group-focus-within/search:scale-100">
         <SearchBar />
       </div>
     </div>
