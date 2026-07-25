@@ -11,7 +11,9 @@ async function Results({ query }: { query: string }) {
   const results = await search(query);
 
   return (
-    <>
+    // Once results are ready the whole block fades and rises in smoothly; no
+    // separate loading animation for the flourish.
+    <div className="load-in">
       <div className="mt-8">
         <ScoreFlourish />
       </div>
@@ -21,7 +23,7 @@ async function Results({ query }: { query: string }) {
       <div className="mt-10">
         <SearchResults results={results} />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -55,12 +57,9 @@ export default async function SearchPage({
           <Suspense
             key={query}
             fallback={
-              <>
-                <div className="mt-8">
-                  <ScoreFlourish busy />
-                </div>
-                <p className="mt-6 font-mono text-xs text-steel">Searching the catalogue…</p>
-              </>
+              // Nothing but a quiet text cue while loading — the flourish and
+              // results stay hidden until ready, then fade in together.
+              <p className="mt-14 font-mono text-xs text-steel">Searching the catalogue…</p>
             }
           >
             <Results query={query} />
