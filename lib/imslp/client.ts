@@ -54,8 +54,10 @@ function searchUrl(query: string, namespace: number, limit: number): URL {
   return url;
 }
 
-export async function searchImslpWorks(query: string, limit = 15): Promise<ImslpSearchResponse> {
-  return imslpFetch<ImslpSearchResponse>(searchUrl(query, WORK_NAMESPACE, limit));
+export async function searchImslpWorks(query: string, limit = 24, offset = 0): Promise<ImslpSearchResponse> {
+  const url = searchUrl(query, WORK_NAMESPACE, limit);
+  if (offset > 0) url.searchParams.set("sroffset", String(offset));
+  return imslpFetch<ImslpSearchResponse>(url);
 }
 
 export async function searchImslpComposers(query: string, limit = 10): Promise<ImslpSearchResponse> {
