@@ -43,12 +43,34 @@ async function imslpFetch<T>(url: URL, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<
   }
 }
 
+/**
+ * Makes IMSLP's search less literal. Two transforms, both verified against the
+ * live API:
+ *   1. Catalogue numbers get the period IMSLP indexes them with — "op38" and
+ *      "op 38" both become "op.38", so "valse op38" finds "Valse, Op.38".
+ *   2. Each plain word gets a trailing "*" (CirrusSearch prefix match), so a
+ *      partial word like "nocturn" matches "Nocturne". This is safe: it does
+ *      not change results for words already typed in full.
+ *
+ * It does NOT rescue very short single-word prefixes (e.g. "Rach" won't
+ * surface Rachmaninoff) — IMSLP's relevance ranking buries those and the API
+ * gives no way to reweight it.
+ */
+export function normalizeSearchQuery(query: string): string {
+  const withCatalogue = query.replace(/\b(op|no)\.?\s*(\d+)\b/gi, (_m, prefix: string, num: string) => `${prefix}.${num}`);
+  return withCatalogue
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((token) => (/^[A-Za-z]{2,}$/.test(token) ? `${token}*` : token))
+    .join(" ");
+}
+
 function searchUrl(query: string, namespace: number, limit: number): URL {
   const url = new URL(MEDIAWIKI_API_BASE);
   url.searchParams.set("action", "query");
   url.searchParams.set("format", "json");
   url.searchParams.set("list", "search");
-  url.searchParams.set("srsearch", query);
+  url.searchParams.set("srsearch", normalizeSearchQuery(query));
   url.searchParams.set("srnamespace", String(namespace));
   url.searchParams.set("srlimit", String(limit));
   return url;
