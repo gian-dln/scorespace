@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { search } from "@/lib/supabase/queries";
+import { search, searchMoreWorks } from "@/lib/supabase/queries";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -9,6 +9,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing query parameter 'q'" }, { status: 400 });
   }
 
-  const results = await search(query);
-  return NextResponse.json(results);
+  // `offset` requests the next page of works only (the "load more" button).
+  const offset = Number(searchParams.get("offset"));
+  if (Number.isInteger(offset) && offset > 0) {
+    return NextResponse.json(await searchMoreWorks(query, offset));
+  }
+
+  return NextResponse.json(await search(query));
 }
