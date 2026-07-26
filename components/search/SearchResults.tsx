@@ -1,6 +1,6 @@
 import type { SearchResult } from "@/types";
 import Link from "next/link";
-import { WorkCard } from "@/components/work/WorkCard";
+import { WorksList } from "@/components/search/WorksList";
 
 export function SearchResults({ results }: { results: SearchResult }) {
   if (results.total === 0) {
@@ -41,11 +41,11 @@ export function SearchResults({ results }: { results: SearchResult }) {
             <h2 className="font-mono text-[11px] uppercase tracking-[0.24em] text-steel">Works</h2>
             <span className="h-px flex-1 bg-hairline" />
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {results.works.map((work) => (
-              <WorkCard key={work.id} work={work} />
-            ))}
-          </div>
+          <WorksList
+            query={results.query}
+            initialWorks={results.works}
+            initialNextOffset={results.nextWorksOffset}
+          />
         </section>
       )}
     </div>
