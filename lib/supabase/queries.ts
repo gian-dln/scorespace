@@ -5,7 +5,7 @@ import {
   parseWorkFromImslpPage,
   workFromSearchHit,
 } from "@/lib/imslp/parser";
-import type { Composer, SearchResult, Work } from "@/types";
+import type { Composer, MoreWorks, SearchResult, Work } from "@/types";
 import { isSupabaseConfigured, supabaseServer } from "./server";
 
 /**
@@ -90,11 +90,28 @@ export async function getComposer(id: string): Promise<Composer | null> {
  * (no scores, no metadata), so caching them would (a) serve empty detail pages
  * on click and (b) clobber any complete record a prior detail visit had cached.
  * The work/composer detail pages own the cache — they store full records. */
-export async function search(query: string): Promise<SearchResult> {
-  const [workHits, composerHits] = await Promise.all([searchImslpWorks(query), searchImslpComposers(query)]);
+const WORKS_PAGE = 24;
 
-  const works = workHits.query.search.map(workFromSearchHit).filter((w): w is Work => w !== null);
+export async function search(query: string): Promise<SearchResult> {
+  const [workHits, composerHits] = await Promise.all([
+    searchImslpWorks(query, WORKS_PAGE),
+    searchImslpComposers(query),
+  ]);
+
+  const rawWorks = workHits.query.search;
+  const works = rawWorks.map(workFromSearchHit).filter((w): w is Work => w !== null);
   const composers = composerHits.query.search.map(composerFromSearchHit).filter((c): c is Composer => c !== null);
 
-  return { query, works, composers, total: works.length + composers.length };
+  // A full page means IMSLP probably has more (it sends no total/continue).
+  const nextWorksOffset = rawWorks.length === WORKS_PAGE ? WORKS_PAGE : null;
+
+  return { query, works, composers, total: works.length + composers.length, nextWorksOffset };
+}
+
+/** The next page of works for the "load more" button. */
+export async function searchMoreWorks(query: string, offset: number): Promise<MoreWorks> {
+  const rawWorks = (await searchImslpWorks(query, WORKS_PAGE, offset)).query.search;
+  const works = rawWorks.map(workFromSearchHit).filter((w): w is Work => w !== null);
+  const nextWorksOffset = rawWorks.length === WORKS_PAGE ? offset + WORKS_PAGE : null;
+  return { works, nextWorksOffset };
 }

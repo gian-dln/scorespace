@@ -46,4 +46,13 @@ export interface SearchResult {
   works: Work[];
   composers: Composer[];
   total: number;
+  /** Offset to pass to `/api/search?offset=` for the next page of works, or
+   *  null when there are no more. IMSLP sends no total/continue, so this is a
+   *  "the page came back full, so there is probably more" heuristic. */
+  nextWorksOffset: number | null;
+}
+
+export interface MoreWorks {
+  works: Work[];
+  nextWorksOffset: number | null;
 }
