@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { ScoreFlourish } from "@/components/search/ScoreFlourish";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchResults } from "@/components/search/SearchResults";
-import { search } from "@/lib/supabase/queries";
+import { WorksList } from "@/components/search/WorksList";
+import { search, searchMoreWorks } from "@/lib/supabase/queries";
 
 /** The awaiting half of the page. Keeping it in its own component lets the
  *  headline and search field render instantly while this streams in behind
@@ -22,6 +24,40 @@ async function Results({ query }: { query: string }) {
       </p>
       <div className="mt-10">
         <SearchResults results={results} />
+      </div>
+    </div>
+  );
+}
+
+/** A composer chip in the results narrows the page to that composer's works.
+ *  Every IMSLP work title carries its composer in parentheses, so searching
+ *  the name is an effective filter; searchMoreWorks gives the first page plus
+ *  the "load more" offset, so WorksList paginates it just like a normal search. */
+async function FilteredResults({ composer }: { composer: string }) {
+  const { works, nextWorksOffset } = await searchMoreWorks(composer, 0);
+
+  return (
+    <div className="load-in">
+      <div className="mt-8">
+        <ScoreFlourish />
+      </div>
+      <p className="mt-6 font-mono text-xs text-steel">
+        {works.length} works by {composer}
+      </p>
+      <div className="mt-10">
+        {works.length === 0 ? (
+          <p className="text-[15px] leading-relaxed text-steel">
+            No works found for {composer}.
+          </p>
+        ) : (
+          <section>
+            <div className="mb-4 flex items-center gap-4">
+              <h2 className="font-mono text-[11px] uppercase tracking-[0.24em] text-steel">Works</h2>
+              <span className="h-px flex-1 bg-hairline" />
+            </div>
+            <WorksList query={composer} initialWorks={works} initialNextOffset={nextWorksOffset} />
+          </section>
+        )}
       </div>
     </div>
   );

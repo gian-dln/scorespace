@@ -24,7 +24,7 @@ export function SearchResults({ results }: { results: SearchResult }) {
             {results.composers.map((composer) => (
               <li key={composer.id}>
                 <Link
-                  href={`/composer/${encodeURIComponent(composer.id)}`}
+                  href={`/search?q=${encodeURIComponent(results.query)}&composer=${encodeURIComponent(composer.id)}`}
                   className="press inline-flex rounded-full border border-hairline px-3.5 py-1.5 text-sm text-ink hover:border-ink hover:bg-ink hover:text-paper"
                 >
                   {composer.name}
