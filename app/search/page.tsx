@@ -66,30 +66,59 @@ async function FilteredResults({ composer }: { composer: string }) {
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; composer?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, composer } = await searchParams;
   const query = q?.trim() ?? "";
+  const composerFilter = composer?.trim() ?? "";
+  // Clearing the composer filter returns to the full results of the search the
+  // chip was clicked from (or a blank page if we arrived here directly).
+  const clearHref = query ? `/search?q=${encodeURIComponent(query)}` : "/search";
 
   return (
     <div className="group/search mx-auto w-full max-w-4xl px-6 py-16 sm:py-20">
       {/* the headline recedes and blurs while the field is focused */}
       <header className="flex flex-col gap-3 transition duration-300 ease-out group-focus-within/search:scale-[0.99] group-focus-within/search:opacity-40 group-focus-within/search:blur-[5px] motion-reduce:group-focus-within/search:scale-100">
         <span className="font-mono text-[11px] uppercase tracking-[0.28em] text-steel">
-          {query ? "Search results" : "Public-domain score library"}
+          {composerFilter ? "Filtered by composer" : query ? "Search results" : "Public-domain score library"}
         </span>
         <h1 className="font-display text-4xl font-medium leading-[1.05] tracking-tight text-ink sm:text-5xl">
-          {query ? <>&ldquo;{query}&rdquo;</> : "Search the repertoire"}
+          {composerFilter ? composerFilter : query ? <>&ldquo;{query}&rdquo;</> : "Search the repertoire"}
         </h1>
       </header>
 
       {/* the field enlarges and comes forward (sm+ only; no zoom on phones) */}
       <div className="relative z-10 mt-8 origin-top will-change-transform transition-transform duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-focus-within/search:scale-[1.06] sm:motion-reduce:group-focus-within/search:scale-100">
-        <SearchBar initialQuery={query} />
+        <SearchBar initialQuery={composerFilter || query} />
       </div>
 
       <div className="transition duration-300 ease-out group-focus-within/search:scale-[0.99] group-focus-within/search:opacity-40 group-focus-within/search:blur-[5px] motion-reduce:group-focus-within/search:scale-100">
-        {query ? (
+        {composerFilter ? (
+          <>
+            {/* the "you are filtered" cue: a solid pill naming the composer,
+                with a way back to the unfiltered results */}
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-ink bg-ink px-3.5 py-1.5 text-sm text-paper">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-paper/60">Composer</span>
+                {composerFilter}
+              </span>
+              <Link
+                href={clearHref}
+                className="press font-mono text-[11px] uppercase tracking-[0.2em] text-steel transition-colors hover:text-ink"
+              >
+                Clear filter
+              </Link>
+            </div>
+            <Suspense
+              key={`composer:${composerFilter}`}
+              fallback={
+                <p className="mt-14 font-mono text-xs text-steel">Gathering this composer&apos;s works…</p>
+              }
+            >
+              <FilteredResults composer={composerFilter} />
+            </Suspense>
+          </>
+        ) : query ? (
           <Suspense
             key={query}
             fallback={
