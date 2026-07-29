@@ -101,11 +101,36 @@ function stripComposerFromTitle(title: string): string {
   return title.replace(/\s*\([^()]+\)\s*$/, "").trim();
 }
 
+/** Turns a wikitext fragment into plain reading text: renders IMSLP's key
+ * template ({{K|Bb}} -> "B♭ major"), strips HTML tags (e.g. <small>), drops any
+ * other leftover templates ({{More}}) and link brackets, collapses whitespace. */
+function cleanWikitext(raw: string): string {
+  return raw
+    .replace(/\{\{K\|([^{}]+?)\}\}/gi, (_m, args: string) => renderKeyName(args.split("|")[0]))
+    .replace(/<[^>]+>/g, "")
+    .replace(/\[\[|\]\]/g, "")
+    .replace(/\{\{[^{}]*\}\}/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** IMSLP's {{K|x}} key template: the letter's case sets major/minor (uppercase
+ * major, lowercase minor) and a trailing b/# is the accidental — {{K|Bb}} is
+ * B♭ major, {{K|a}} is A minor, {{K|f#}} is F♯ minor. */
+function renderKeyName(code: string): string {
+  const match = code.trim().match(/^([A-Ga-g])([b#]?)$/);
+  if (!match) return code.trim();
+  const [, letter, accidental] = match;
+  const symbol = accidental === "b" ? "♭" : accidental === "#" ? "♯" : "";
+  const quality = letter === letter.toUpperCase() ? "major" : "minor";
+  return `${letter.toUpperCase()}${symbol} ${quality}`;
+}
+
 /** Matches simple "|Field=value" wikitext params. */
 function extractInfoboxField(wikitext: string, field: string): string | undefined {
   const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = wikitext.match(new RegExp(`\\|\\s*${escaped}\\s*=\\s*([^\\n|]+)`, "i"));
-  return match?.[1]?.trim().replace(/\[\[|\]\]/g, "") || undefined;
+  return (match?.[1] && cleanWikitext(match[1])) || undefined;
 }
 
 /** Matches "|Field={{Template|value}}" and returns the template's last argument, e.g. |Key={{Key|C}} -> "C". */
@@ -132,9 +157,12 @@ function extractScores(wikitext: string): Score[] {
 
   for (const body of extractBalancedBlocks(wikitext, "{{#fte:imslpfile")) {
     // Map "File Description N" by its index N so we can pair it to "File Name N".
+    // Capture to end of line (not the first "|"): a description like
+    // "1. Partita in {{K|Bb}}, BWV 825" contains a "|" *inside* the key template,
+    // so stopping at "|" would truncate it to "1. Partita in {{K".
     const descriptions = new Map<string, string>();
-    for (const m of body.matchAll(/\|\s*File Description\s*(\d*)\s*=\s*([^\n|]*)/gi)) {
-      const desc = m[2].trim().replace(/\[\[|\]\]/g, "");
+    for (const m of body.matchAll(/\|\s*File Description\s*(\d*)\s*=\s*([^\n]*)/gi)) {
+      const desc = cleanWikitext(m[2]);
       if (desc) descriptions.set(m[1], desc);
     }
 
