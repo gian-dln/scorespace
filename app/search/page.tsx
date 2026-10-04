@@ -33,8 +33,14 @@ async function Results({ query }: { query: string }) {
  *  Every IMSLP work title carries its composer in parentheses, so searching
  *  the name is an effective filter; searchMoreWorks gives the first page plus
  *  the "load more" offset, so WorksList paginates it just like a normal search. */
-async function FilteredResults({ composer }: { composer: string }) {
-  const { works, nextWorksOffset } = await searchMoreWorks(composer, 0);
+async function FilteredResults({ query, composer }: { query: string; composer: string }) {
+  // IMSLP work titles include the composer in parentheses. Combining the
+  // entered query with that name keeps the selected composer as a constraint
+  // for later searches, while the initial composer-chip search still returns
+  // the composer's catalogue.
+  const queryIsPartOfComposerName = composer.toLocaleLowerCase().includes(query.toLocaleLowerCase());
+  const filteredQuery = query && !queryIsPartOfComposerName ? `${query} ${composer}` : composer;
+  const { works, nextWorksOffset } = await searchMoreWorks(filteredQuery, 0);
 
   return (
     <div className="load-in">
@@ -55,7 +61,7 @@ async function FilteredResults({ composer }: { composer: string }) {
               <h2 className="font-mono text-[11px] uppercase tracking-[0.24em] text-steel">Works</h2>
               <span className="h-px flex-1 bg-hairline" />
             </div>
-            <WorksList query={composer} initialWorks={works} initialNextOffset={nextWorksOffset} />
+            <WorksList query={filteredQuery} initialWorks={works} initialNextOffset={nextWorksOffset} />
           </section>
         )}
       </div>
@@ -89,7 +95,7 @@ export default async function SearchPage({
 
       {/* the field enlarges and comes forward (sm+ only; no zoom on phones) */}
       <div className="relative z-10 mt-8 origin-top will-change-transform transition-transform duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:group-focus-within/search:scale-[1.06] sm:motion-reduce:group-focus-within/search:scale-100">
-        <SearchBar initialQuery={composerFilter || query} />
+        <SearchBar initialQuery={query} composerFilter={composerFilter || undefined} />
       </div>
 
       <div className="transition duration-300 ease-out group-focus-within/search:scale-[0.99] group-focus-within/search:opacity-40 group-focus-within/search:blur-[5px] motion-reduce:group-focus-within/search:scale-100">
@@ -110,12 +116,12 @@ export default async function SearchPage({
               </Link>
             </div>
             <Suspense
-              key={`composer:${composerFilter}`}
+              key={`composer:${composerFilter}:${query}`}
               fallback={
                 <p className="mt-14 font-mono text-xs text-steel">Gathering this composer&apos;s works…</p>
               }
             >
-              <FilteredResults composer={composerFilter} />
+              <FilteredResults query={query} composer={composerFilter} />
             </Suspense>
           </>
         ) : query ? (

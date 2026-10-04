@@ -3,7 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
+export function SearchBar({
+  initialQuery = "",
+  composerFilter,
+}: {
+  initialQuery?: string;
+  /** Preserved across new searches until the filter is explicitly cleared. */
+  composerFilter?: string;
+}) {
   const [query, setQuery] = useState(initialQuery);
   const router = useRouter();
 
@@ -11,7 +18,9 @@ export function SearchBar({ initialQuery = "" }: { initialQuery?: string }) {
     event.preventDefault();
     const trimmed = query.trim();
     if (!trimmed) return;
-    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    const params = new URLSearchParams({ q: trimmed });
+    if (composerFilter) params.set("composer", composerFilter);
+    router.push(`/search?${params.toString()}`);
   }
 
   return (
