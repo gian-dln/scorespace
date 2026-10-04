@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+ScoreSpace
 
-## Getting Started
+A small web app for searching IMSLP (the International Music Score Library Project) more easily. Search for a work, filter by composer, and get a direct link to the score on IMSLP.
 
-First, run the development server:
 
-```bash
+Why I built it
+
+IMSLP's search box sends the query to Google and shows the results on a Google results page, not on IMSLP's own site. That makes it awkward to browse works, and there is no simple way to narrow results by composer. I built ScoreSpace to make that one task quicker: find a piece, filter by composer, open the score.
+
+It is also a personal project for practising system design and API integration, using a stack similar to one I had already used in a university team project.
+
+Features
+Search for a musical work
+Filter works by composer
+Links to the score PDF on IMSLP, so you can download it from the source
+Stores frequently searched composers and works (Supabase)
+How it works
+You search for a work.
+ScoreSpace queries IMSLP's API for matching works and their composers.
+Results can be filtered by composer.
+Each result links to IMSLP. ScoreSpace does not host or copy any scores.
+Tech stack
+Next.js 16 (App Router) with TypeScript
+React 19
+Tailwind CSS 4
+Supabase (Postgres) via @supabase/supabase-js
+ESLint
+Getting started
+bash
+git clone https://github.com/gian-dln/scorespace.git
+cd scorespace
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a .env.local file with your Supabase project details:
 
-## Learn More
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+<!-- Check these names match what the code actually reads -->
+Status and limitations
 
-To learn more about Next.js, take a look at the following resources:
+This is an early personal project. It currently has no user accounts, and Supabase is only used to store frequently searched composers and works. It has not been tested with users other than me.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+How it was built
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Most of the code was written with AI assistance. I defined the problem, chose the approach (use IMSLP's API, link out to IMSLP rather than rehosting scores, use frameworks I already know), and directed and checked the result.
 
-## Deploy on Vercel
+Disclaimer
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+ScoreSpace is not affiliated with or endorsed by IMSLP. All scores are hosted by IMSLP and remain subject to its licences and terms. Please check the licence on each score's IMSLP page before use.
