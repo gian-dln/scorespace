@@ -27,6 +27,11 @@ export interface ImslpPageRevision {
   "*": string; // raw wikitext
 }
 
+export interface ImslpPageCategory {
+  ns: number;
+  title: string;
+}
+
 export interface ImslpPage {
   pageid: number;
   ns: number;
@@ -34,6 +39,8 @@ export interface ImslpPage {
   missing?: string;
   fullurl?: string;
   revisions?: ImslpPageRevision[];
+  /** Parent categories, returned by `prop=categories`. */
+  categories?: ImslpPageCategory[];
 }
 
 export interface ImslpPageResponse {

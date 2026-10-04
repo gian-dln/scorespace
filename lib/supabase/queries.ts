@@ -1,4 +1,4 @@
-import { getImslpPage, searchImslpComposers, searchImslpWorks } from "@/lib/imslp/client";
+import { getImslpPage, getImslpPageCategories, searchImslpComposers, searchImslpWorks } from "@/lib/imslp/client";
 import {
   composerFromSearchHit,
   parseComposerFromImslpPage,
@@ -91,6 +91,26 @@ export async function getComposer(id: string): Promise<Composer | null> {
  * on click and (b) clobber any complete record a prior detail visit had cached.
  * The work/composer detail pages own the cache — they store full records. */
 const WORKS_PAGE = 24;
+const COMPOSERS_CATEGORY = "Category:Composers";
+
+/** Namespace 14 is IMSLP's general Category namespace. Verify that a search
+ * hit belongs to the site-maintained Composers category before treating it as
+ * a person; otherwise topic categories such as "Pieces based on Beethoven's
+ * Fidelio" appear as composer filters. */
+async function composerSearchHitsOnly(
+  hits: Awaited<ReturnType<typeof searchImslpComposers>>["query"]["search"],
+) {
+  if (hits.length === 0) return [];
+
+  const pages = await getImslpPageCategories(hits.map((hit) => hit.title));
+  const composerTitles = new Set(
+    Object.values(pages.query.pages)
+      .filter((page) => page.categories?.some((category) => category.title === COMPOSERS_CATEGORY))
+      .map((page) => page.title),
+  );
+
+  return hits.filter((hit) => composerTitles.has(hit.title));
+}
 
 export async function search(query: string): Promise<SearchResult> {
   const [workHits, composerHits] = await Promise.all([
@@ -100,7 +120,8 @@ export async function search(query: string): Promise<SearchResult> {
 
   const rawWorks = workHits.query.search;
   const works = rawWorks.map(workFromSearchHit).filter((w): w is Work => w !== null);
-  const composers = composerHits.query.search.map(composerFromSearchHit).filter((c): c is Composer => c !== null);
+  const composerHitsOnly = await composerSearchHitsOnly(composerHits.query.search);
+  const composers = composerHitsOnly.map(composerFromSearchHit).filter((c): c is Composer => c !== null);
 
   // A full page means IMSLP probably has more (it sends no total/continue).
   const nextWorksOffset = rawWorks.length === WORKS_PAGE ? WORKS_PAGE : null;

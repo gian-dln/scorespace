@@ -98,3 +98,20 @@ export async function getImslpPage(title: string): Promise<ImslpPageResponse> {
   url.searchParams.set("titles", title);
   return imslpFetch<ImslpPageResponse>(url);
 }
+
+/**
+ * Namespace 14 contains every IMSLP category, not only people. A composer
+ * category is a direct member of `Category:Composers`, so inspect parent
+ * categories in one batched request before presenting category search hits as
+ * composer filters. The current composer-search page size is 10, well below
+ * MediaWiki's multi-title limit.
+ */
+export async function getImslpPageCategories(titles: string[]): Promise<ImslpPageResponse> {
+  const url = new URL(MEDIAWIKI_API_BASE);
+  url.searchParams.set("action", "query");
+  url.searchParams.set("format", "json");
+  url.searchParams.set("prop", "categories");
+  url.searchParams.set("cllimit", "max");
+  url.searchParams.set("titles", titles.join("|"));
+  return imslpFetch<ImslpPageResponse>(url);
+}
