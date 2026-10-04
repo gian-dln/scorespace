@@ -20,7 +20,7 @@ async function Results({ query }: { query: string }) {
         <ScoreFlourish />
       </div>
       <p className="mt-6 font-mono text-xs text-steel">
-        {results.works.length} works · {results.composers.length} composers
+        Loaded {results.works.length} works · {results.composers.length} composers
       </p>
       <div className="mt-10">
         <SearchResults results={results} />
@@ -42,7 +42,7 @@ async function FilteredResults({ composer }: { composer: string }) {
         <ScoreFlourish />
       </div>
       <p className="mt-6 font-mono text-xs text-steel">
-        {works.length} works by {composer}
+        Works by {composer}
       </p>
       <div className="mt-10">
         {works.length === 0 ? (
