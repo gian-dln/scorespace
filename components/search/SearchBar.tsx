@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 export function SearchBar({
   initialQuery = "",
@@ -13,6 +13,27 @@ export function SearchBar({
 }) {
   const [query, setQuery] = useState(initialQuery);
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target;
+      const isTypingTarget = target instanceof HTMLElement && (
+        target.isContentEditable ||
+        target.closest("input, textarea, select, [contenteditable='true']") !== null
+      );
+
+      if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget) {
+        event.preventDefault();
+        inputRef.current?.focus();
+      } else if (event.key === "Escape" && document.activeElement === inputRef.current) {
+        inputRef.current?.blur();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -37,11 +58,12 @@ export function SearchBar({
         className="pointer-events-none absolute -inset-x-5 -inset-y-4 -z-10 rounded-2xl bg-surface opacity-0 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] ring-1 ring-hairline transition duration-300 ease-out group-focus-within:opacity-100"
       />
       <input
+        ref={inputRef}
         type="search"
         name="q"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search a work, composer, or catalogue number…"
+        placeholder="Press '/' to search a work, composer, or catalogue number…"
         aria-label="Search the IMSLP catalogue"
         className="min-w-0 flex-1 bg-transparent text-lg text-ink placeholder:text-steel/80 focus:outline-none"
       />
